@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contoso Task Pane Add-in</title>
+
+    <!-- Office JavaScript API -->
+    <script src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.min.js"></script>
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+    <!-- Fluent UI -->
+    <link rel="stylesheet"
+        href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" />
+
+    <script>
+        let msalInstance;
+        var msalConfig;
+
+        Office.onReady(async (info) => {
+            if (info.host === Office.HostType.Outlook) {
+                msalConfig = {
+                    auth: {
+                        clientId: "08a1a76f-6895-4033-91b9-6a306aeaa524", // Reemplaza con tu Application (client) ID
+                        authority: "https://login.microsoftonline.com/f3df3acc-6a4a-4618-adfd-8828f324887f", // Reemplaza con tu tenant
+                        redirectUri: "https://dev219430.service-now.com/test_01.do", // URL de redirección
+                    },
+                    cache: {
+                        cacheLocation: "sessionStorage",
+                        storeAuthStateInCookie: true,
+                    }
+                };
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                msalInstance.handleRedirectPromise()
+                    .then(response => {
+                        if (response && response.accessToken) {
+                            document.getElementById('status').innerText = '1111 Autenticación previa detectada. Redirigiendo...';
+                            window.location.href = "https://dev219430.service-now.com/test_02.do";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('111 Error de redirección de autenticación:', error);
+                    });
+                handleRedirect();
+                login();
+            }
+        });
+
+        function login() {
+            msalInstance.loginPopup(msalConfig)
+                .then(response => {
+                    if (response && response.accessToken) {
+                        document.getElementById('status').innerText = 'Inicio de sesión exitoso. Token: ' + response.accessToken;
+                        window.location.href = "https://dev219430.service-now.com/test_02.do";
+                    }
+                })
+                .catch(error => {
+
+                    if (error.errorCode === "user_cancelled") {
+                        window.location.href = "https://dev219430.service-now.com/test_01.do";
+                    } else {
+                        document.getElementById('status').innerText = 'Error de autenticación';
+                        msalInstance.loginPopup(msalConfig); // Reintentar
+                    }
+                });
+
+        }
+    </script>
+</head>
+
+<body class="ms-font-m ms-welcome ms-Fabric">
+    <div id="taskpane-container">
+        <button onclick="login()">Login con Microsoft</button>
+        <div id="status"></div> <!-- Elemento para mostrar el estado de inicio de sesión -->
+    </div>
+</body>
+
+</html>

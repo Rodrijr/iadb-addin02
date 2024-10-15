@@ -18,62 +18,86 @@
     <script>
         let msalInstance;
         var msalConfig;
-
+        // const redirectURL = 'https://iadbdev.service-now.com/x_nuvo_eam_fm_view_v2.do'
+        const redirectURL = `https://dev219430.service-now.com/test_01.do`
         Office.onReady(async (info) => {
+
             if (info.host === Office.HostType.Outlook) {
-                msalConfig = {
-                    auth: {
-                        clientId: "08a1a76f-6895-4033-91b9-6a306aeaa524", // Reemplaza con tu Application (client) ID
-                        authority: "https://login.microsoftonline.com/f3df3acc-6a4a-4618-adfd-8828f324887f", // Reemplaza con tu tenant
-                        redirectUri: "https://dev219430.service-now.com/test_01.do", // URL de redirección
-                    },
-                    cache: {
-                        cacheLocation: "sessionStorage",
-                        storeAuthStateInCookie: true,
-                    }
-                };
-                msalInstance = new msal.PublicClientApplication(msalConfig);
-                msalInstance.handleRedirectPromise()
-                    .then(response => {
-                        if (response && response.accessToken) {
-                            document.getElementById('status').innerText = '1111 Autenticación previa detectada. Redirigiendo...';
-                            window.location.href = "https://dev219430.service-now.com/test_02.do";
-                        }
-                    })
-                    .catch(error => {
-                        console.error('111 Error de redirección de autenticación:', error);
-                    });
-                handleRedirect();
+                //Office.context.ui.messageParent(JSON.stringify({ message: 'Autenticación exitosa', name: 'Usuario' }));
                 login();
             }
         });
 
+        function userSignedIn() {
+            Office.context.ui.messageParent(true.toString());
+        }
+
+        function processMessage(dialog1) {
+            var el = document.createElement("iframe");
+            dialog1?.close()
+            el.id = 'miIframe';
+            el.sandbox = "allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation";
+
+            title = "Complemento de Office Locations finder"
+            allow = ""
+            el.name = "{&quot;baseFrameName&quot;:&quot;_xdm_5__8b7c90dc-80fd-0982-441d-9faa8998d12269854040_b7b7b150_1724265576652&quot;,&quot;hostInfo&quot;:&quot;Outlook|Web|16.01|es-ES|9c8bc367-191e-711c-b1d0-809b38add415|||16&quot;,&quot;xdmInfo&quot;:&quot;9edc182_813dbe25_1724265576652|8b7c90dc-80fd-0982-441d-9faa8998d122|https://outlook.office.com&quot;,&quot;flights&quot;:&quot;[\&quot;Microsoft.Office.SharedOnline.ProcessMultipleCommandsInDequeInvoker\&quot;]&quot;,&quot;disabledChangeGates&quot;:&quot;[]&quot;}"
+            el.class = "AddinIframe"
+            el.referrerpolicy = "strict-origin-when-cross-origin";
+            el.src = redirectURL;
+            var a = document.getElementById("miIframe")?.remove();
+            document.getElementById("taskpane-container").appendChild(el);
+        }
+
+
+        var dialog; // Declare dialog as global for use in later functions.
         function login() {
-            msalInstance.loginPopup(msalConfig)
-                .then(response => {
-                    if (response && response.accessToken) {
-                        document.getElementById('status').innerText = 'Inicio de sesión exitoso. Token: ' + response.accessToken;
-                        window.location.href = "https://dev219430.service-now.com/test_02.do";
+            const outlookVersion = Office.context.mailbox.diagnostics.hostVersion;
+            console.log("Versión de Outlook:", outlookVersion);
+            document.getElementById("taskpane-container").innerText = "Versión de Outlook: " + outlookVersion;
+            if (outlookVersion == 'Antigua') {
+                var newWindow = window.open('https://dev219430.service-now.com/test_01.do');
+                var counter = 20
+                var interval = setInterval(function () {
+                    counter -= 1;
+                    if (counter === 0) {
+                        // newWindow.close();
+                        clearInterval(interval);
                     }
-                })
-                .catch(error => {
+                }, 1000);
+                window.addEventListener('message', function (event) {
+                    console.log("recepcion de mensaje", event)
+                    console.log('recibi el mensaje')
+                   // newWindow.close()
+                    // Procesar el mensaje recibido
 
-                    if (error.errorCode === "user_cancelled") {
-                        window.location.href = "https://dev219430.service-now.com/test_01.do";
-                    } else {
-                        document.getElementById('status').innerText = 'Error de autenticación';
-                        msalInstance.loginPopup(msalConfig); // Reintentar
+                    // Redirigir la página a test_01 con el token en la URL (o cualquier otra acción que desees)
+                    processMessage(newWindow)
+                    //window.location.href = 'https://dev219430.service-now.com/test_01.do';
+
+                }, false);
+            }
+            else if (officeVErsion == 'Nueva') {
+                Office.context.ui.displayDialogAsync(redirectURL, { height: 30, width: 20 },
+                    (asyncResult) => {
+                        dialog = asyncResult.value;
+                        document.getElementById('status').innerText = "2";
+                        dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
+                            processMessage(dialog); // Llama a la función para procesar el mensaje
+                        });
+                        dialog.addEventHandler(Office.EventType.DialogEventReceived, (arg) => {
+                            processMessage(dialog);
+                        });
                     }
-                });
-
+                );
+            }
         }
     </script>
 </head>
 
 <body class="ms-font-m ms-welcome ms-Fabric">
     <div id="taskpane-container">
-        <button onclick="login()">Login con Microsoft</button>
         <div id="status"></div> <!-- Elemento para mostrar el estado de inicio de sesión -->
+
     </div>
 </body>
 

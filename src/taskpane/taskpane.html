@@ -18,8 +18,8 @@
     <script>
         let msalInstance;
         var msalConfig;
-        // const redirectURL = 'https://iadbdev.service-now.com/x_nuvo_eam_fm_view_v2.do'
-        const redirectURL = `https://dev219430.service-now.com/test_01.do`
+        const redirectURL = 'https://iadbdev.service-now.com/x_nuvo_eam_fm_view_v2.do?app=user#?"'
+        // const redirectURL = `https://dev219430.service-now.com/test_01.do`
         Office.onReady(async (info) => {
 
             if (info.host === Office.HostType.Outlook) {
@@ -44,6 +44,7 @@
             allow = ""
             el.name = "{&quot;baseFrameName&quot;:&quot;_xdm_5__8b7c90dc-80fd-0982-441d-9faa8998d12269854040_b7b7b150_1724265576652&quot;,&quot;hostInfo&quot;:&quot;Outlook|Web|16.01|es-ES|9c8bc367-191e-711c-b1d0-809b38add415|||16&quot;,&quot;xdmInfo&quot;:&quot;9edc182_813dbe25_1724265576652|8b7c90dc-80fd-0982-441d-9faa8998d122|https://outlook.office.com&quot;,&quot;flights&quot;:&quot;[\&quot;Microsoft.Office.SharedOnline.ProcessMultipleCommandsInDequeInvoker\&quot;]&quot;,&quot;disabledChangeGates&quot;:&quot;[]&quot;}"
             el.class = "AddinIframe"
+            el.style = "height:100vh;width:100vw;";
             el.referrerpolicy = "strict-origin-when-cross-origin";
             el.src = redirectURL;
             var a = document.getElementById("miIframe")?.remove();
@@ -52,41 +53,48 @@
         }
 
 
-        var dialog; // Declare dialog as global for use in later functions.
+        var dialog;
         function login() {
             const outlookVersion = Office.context.mailbox.diagnostics.hostVersion;
             console.log("Versión de Outlook:", outlookVersion);
             document.getElementById("taskpane-container").innerText = "Versión de Outlook: " + outlookVersion;
-          /* Office.context.ui.displayDialogAsync(redirectURL, { height: 30, width: 20 },
-                (asyncResult) => {
-                    dialog = asyncResult.value;
-                    dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
-                        document.getElementById("taskpane-container").innerText = "Versión de Outlook 1 : " + outlookVersion;
-                        processMessage(arg); // Llama a la función para procesar el mensaje
-                    });
-                    dialog.addEventHandler(Office.EventType.DialogEventReceived, (arg) => {
-                        document.getElementById("taskpane-container").innerText = "Versión de Outlook 2 : ";
-                        document.getElementById("taskpane-container").innerText = "Versión de Outlook 3: " + outlookVersion;
-                        console.log("aaaaaaaaaaaaaaaa")
-                        var el = document.createElement("iframe");
+            if(outlookVersion[0] == '1'){
+                 window.location.href = 'https://iadbdev.service-now.com/x_nuvo_eam_microsoft_add_in.do'
+            }
+            else{
+                Office.context.ui.displayDialogAsync(redirectURL, { height: 30, width: 20 },
+                    (asyncResult) => {
+                        dialog = asyncResult.value;
+                        dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
+                            document.getElementById("taskpane-container").innerText = "Versión de Outlook 1 : " + outlookVersion;
+                            processMessage(arg); // Llama a la función para procesar el mensaje
+                        });
+                        dialog.addEventHandler(Office.EventType.DialogEventReceived, (arg) => {
+                            document.getElementById("taskpane-container").innerText = "Versión de Outlook 2 : ";
+                            document.getElementById("taskpane-container").innerText = "Versión de Outlook 3: " + outlookVersion;
+                            console.log("aaaaaaaaaaaaaaaa")
+                            var el = document.createElement("iframe");
 
-                        el.id = 'miIframe';
-                        el.sandbox = "allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation";
+                            el.id = 'miIframe';
+                            el.sandbox = "allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation";
 
-                        title = "Complemento de Office Locations finder"
-                        allow = ""
-                        el.name = "{&quot;baseFrameName&quot;:&quot;_xdm_5__8b7c90dc-80fd-0982-441d-9faa8998d12269854040_b7b7b150_1724265576652&quot;,&quot;hostInfo&quot;:&quot;Outlook|Web|16.01|es-ES|9c8bc367-191e-711c-b1d0-809b38add415|||16&quot;,&quot;xdmInfo&quot;:&quot;9edc182_813dbe25_1724265576652|8b7c90dc-80fd-0982-441d-9faa8998d122|https://outlook.office.com&quot;,&quot;flights&quot;:&quot;[\&quot;Microsoft.Office.SharedOnline.ProcessMultipleCommandsInDequeInvoker\&quot;]&quot;,&quot;disabledChangeGates&quot;:&quot;[]&quot;}"
-                        el.class = "AddinIframe"
-                        el.referrerpolicy = "strict-origin-when-cross-origin";
-                        el.src = redirectURL;
-                        var a = document.getElementById("miIframe")?.remove();
+                            title = "Complemento de Office Locations finder"
+                            allow = ""
+                            el.name = "{&quot;baseFrameName&quot;:&quot;_xdm_5__8b7c90dc-80fd-0982-441d-9faa8998d12269854040_b7b7b150_1724265576652&quot;,&quot;hostInfo&quot;:&quot;Outlook|Web|16.01|es-ES|9c8bc367-191e-711c-b1d0-809b38add415|||16&quot;,&quot;xdmInfo&quot;:&quot;9edc182_813dbe25_1724265576652|8b7c90dc-80fd-0982-441d-9faa8998d122|https://outlook.office.com&quot;,&quot;flights&quot;:&quot;[\&quot;Microsoft.Office.SharedOnline.ProcessMultipleCommandsInDequeInvoker\&quot;]&quot;,&quot;disabledChangeGates&quot;:&quot;[]&quot;}"
+                            el.class = "AddinIframe"
+                             el.style = "height:100vh;width:100vw;";
+                            el.referrerpolicy = "strict-origin-when-cross-origin";
+                            el.src = redirectURL;
+                            var a = document.getElementById("miIframe")?.remove();
 
-                        document.getElementById("taskpane-container").appendChild(el);
-                    });
-                }
-            );
+                            document.getElementById("taskpane-container").appendChild(el);
+                        });
+                    }
+                );
+            }
+          /*
 */
-            window.location.href = 'https://dev219430.service-now.com/test_add_in.do'
+            // window.location.href = 'https://dev219430.service-now.com/test_add_in.do'
             /*var newWindow = window.open('https://dev219430.service-now.com/test_01.do');
             var counter = 20
             var interval = setInterval(function () {
